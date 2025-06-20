@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System Administrator Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest' };</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="admin.js"></script>
+    <style>
+        html {
+            font-family: 'Inter', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .transition-bg {
+            transition: background 0.3s;
+        }
+        .transition-shadow {
+            transition: box-shadow 0.3s;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;500;600;700;800;900&amp;amp;display=swap" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif !important;
+        }
+        .fa, .fas, .far, .fal, .fab {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+        }
+        .highlighted-section {
+            outline: 2px solid #3F20FB;
+            background-color: rgba(63, 32, 251, 0.1);
+        }
+        .edit-button {
+            position: absolute;
+            z-index: 1000;
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        html, body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-900 transition-bg duration-300" id="body-root">
+    <!-- HEADER -->
+    <div id="header"
+        class="w-full flex items-center justify-between px-6 py-4 shadow-md bg-white dark:bg-[#181A20] transition-bg h-[72px] z-30">
+        <div class="flex items-center space-x-64">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-shield-halved text-blue-600 dark:text-blue-400 text-2xl"></i>
+                <span class="font-bold text-xl tracking-tight select-none text-gray-900 dark:text-white">Victor Admin Portal</span>
+            </div>
+            <div class="hidden md:flex items-center ml-6">
+                <input type="text"
+                    class="rounded-lg bg-gray-100 dark:bg-[#23272F] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-bg"
+                    placeholder="Search users, activities..." />
+                <button class="ml-2 p-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors text-white">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="modeToggle" class="p-2 rounded-full bg-gray-100 dark:bg-[#23272F] shadow transition-bg"
+                onclick="toggleDarkMode()">
+                <i id="modeIcon" class="fa-solid fa-moon text-gray-600 dark:text-blue-400"></i>
+            </button>
+            <div class="flex items-center space-x-3 cursor-pointer relative group">
+                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" alt="Admin"
+                    class="w-10 h-10 rounded-full object-cover shadow" />
+                <div class="flex flex-col items-start">
+                    <span class="font-semibold text-sm text-gray-900 dark:text-white">Alex Morgan</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Administrator</span>
+                </div>
+                <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                <div class="absolute right-0 top-14 bg-white dark:bg-[#23272F] min-w-[180px] shadow-lg rounded-lg py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 z-50"
+                    id="header-profile-dropdown">
+                    <span class="block px-5 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-[#1C1F25] cursor-pointer">Settings</span>
+                    <span class="block px-5 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-[#1C1F25] cursor-pointer">Logout</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex w-full h-[calc(100vh-72px)] bg-gray-50 dark:bg-[#15171B] transition-bg" id="main-dashboard-wrapper">
+        <!-- SIDEBAR -->
+        <aside id="sidebar"
+            class="h-full w-64 bg-white dark:bg-[#181A20] transition-bg flex flex-col shadow-lg z-20 fixed md:static left-0 top-0 md:relative">
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <span class="sidebar-link flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-[#23272F] transition-all cursor-pointer"
+                    data-target="#main-dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </span>
+                <span class="sidebar-link flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-[#23272F] transition-all cursor-pointer"
+                    data-target="#main-monitoring">
+                    <i class="fa-solid fa-users"></i>
+                    <span>User Monitoring</span>
+                </span>
+                <span class="sidebar-link flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-[#23272F] transition-all cursor-pointer"
+                    data-target="#main-file-management">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>File Management</span>
+                </span>
+                <span class="sidebar-link flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-[#23272F] transition-all cursor-pointer"
+                    data-target="#main-system-policy">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>System Policy</span>
+                </span>
+                <span class="sidebar-link flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-[#23272F] transition-all cursor-pointer"
+                    data-target="#main-security-alerts">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Security Alerts</span>
+                </span>
+                <span class="sidebar-link flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-[#23272F] transition-all cursor-pointer"
+                    data-target="#main-settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </span>
+            </nav>
+            <div class="px-4 pb-6 pt-2">
+                <div class="bg-blue-50 dark:bg-[#23272F] rounded-lg p-3 flex items-center space-x-3">
+                    <i class="fa-solid fa-circle-info text-blue-600 dark:text-blue-400"></i>
+                    <span class="text-xs text-gray-700 dark:text-gray-300">System up to date</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="main-dashboard" class="flex-1 ml-0  p-4 md:p-8 overflow-y-auto h-full flex flex-col space-y-6 transition-all">
+            <!-- Security Events Overview Section -->
+            <section id="security-events-section" class="w-full bg-white dark:bg-[#181A20] rounded-xl shadow-lg transition-shadow p-6 flex flex-col space-y-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-blue-600 dark:text-blue-400"></i>
+                    <h2 class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">Security Events Overview</h2>
+                </div>
+                <canvas id="security-events-chart" class="w-full h-72"></canvas>
+            </section>
+
+            <!-- Activity Log and Security Alerts Row -->
+            <div id="main-activity-row" class="flex flex-col lg:flex-row gap-6 w-full">
+
+                <!-- Activity Log Section -->
+                <section id="activity-log-section"
+                    class="flex-1 bg-white dark:bg-[#181A20] rounded-xl shadow-lg p-6 space-y-4 transition-shadow min-w-0">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-clock-rotate-left text-blue-600 dark:text-blue-400"></i>
+                        <h2 class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">Activity Log</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <input type="text"
+                            class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-bg"
+                            placeholder="Search Activity..." />
+                        <select class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-1 text-xs focus:outline-none">
+                            <option>All Types</option>
+                            <option>Website Visit</option>
+                            <option>File Download</option>
+                            <option>Email</option>
+                            <option>Unauthorized Access</option>
+                        </select>
+                        <select class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-1 text-xs focus:outline-none">
+                            <option>Any User</option>
+                            <option>Jane Smith</option>
+                            <option>Ethan Lee</option>
+                            <option>Liam Brown</option>
+                        </select>
+                        <button
+                            class="ml-auto px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-xs shadow">
+                            <i class="fa-solid fa-file-arrow-down"></i> Export
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto max-h-[280px] scrollbar-hide">
+                        <table class="min-w-full text-xs">
+                            <thead>
+                                <tr class="text-left border-b border-gray-100 dark:border-gray-800">
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Type</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Details</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">User</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="py-2 px-2">
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 font-semibold"><i
+                                                class="fa-solid fa-globe"></i> Website Visit</span>
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">https://workportal.com (DNS:
+                                        workportal.com, IP: 172.16.4.21)</td>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Jane Smith</td>
+                                    <td class="py-2 px-2 text-gray-500 dark:text-gray-400">10:01:44 AM</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-2">
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100 font-semibold"><i
+                                                class="fa-solid fa-file-arrow-down"></i> File Download</span>
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Budget2025.xlsx (Work Server)
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Ethan Lee</td>
+                                    <td class="py-2 px-2 text-gray-500 dark:text-gray-400">09:59:12 AM</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-2">
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 font-semibold"><i
+                                                class="fa-solid fa-envelope"></i> Email</span>
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Sent to abrown@vendor.com
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Jane Smith</td>
+                                    <td class="py-2 px-2 text-gray-500 dark:text-gray-400">09:51:05 AM</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-2">
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 font-semibold"><i
+                                                class="fa-solid fa-user-lock"></i> Unauthorized Access</span>
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Attempted admin area login
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Liam Brown</td>
+                                    <td class="py-2 px-2 text-gray-500 dark:text-gray-400">09:49:43 AM</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Security Alerts Sidebar -->
+                <aside id="security-alerts-sidebar"
+                    class="w-full lg:w-[340px] bg-white dark:bg-[#181A20] rounded-xl shadow-lg p-6 space-y-4 transition-shadow flex-shrink-0">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-triangle-exclamation text-red-600 dark:text-red-400"></i>
+                        <h2 class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">Security Alerts
+                        </h2>
+                    </div>
+                    <div class="space-y-3 max-h-[320px] overflow-y-auto">
+                        <div id="alert-card-1"
+                            class="bg-red-50 dark:bg-red-900/40 p-4 rounded-lg shadow flex items-start gap-3 relative">
+                            <i class="fa-solid fa-lock text-red-600 text-lg mt-1"></i>
+                            <div>
+                                <div class="font-semibold text-red-900 dark:text-red-200">Unauthorized File Access</div>
+                                <div class="text-xs text-gray-700 dark:text-gray-300 mb-1">User: Ethan Lee<br />Time:
+                                    10:12:02 AM</div>
+                                <div class="flex gap-2 mt-2">
+                                    <button
+                                        class="px-2 py-1 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700 transition-shadow shadow">Acknowledge</button>
+                                    <button
+                                        class="px-2 py-1 rounded-md bg-green-600 text-white text-xs hover:bg-green-700 transition-shadow shadow">Resolve</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="alert-card-2"
+                            class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg shadow flex items-start gap-3 relative">
+                            <i class="fa-solid fa-shield-halved text-yellow-600 text-lg mt-1"></i>
+                            <div>
+                                <div class="font-semibold text-yellow-900 dark:text-yellow-100">Phishing Link Clicked
+                                </div>
+                                <div class="text-xs text-gray-700 dark:text-gray-300 mb-1">User: Jane Smith<br />Time:
+                                    09:58:22 AM</div>
+                                <div class="flex gap-2 mt-2">
+                                    <button
+                                        class="px-2 py-1 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700 transition-shadow shadow">Acknowledge</button>
+                                    <button
+                                        class="px-2 py-1 rounded-md bg-green-600 text-white text-xs hover:bg-green-700 transition-shadow shadow">Resolve</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="alert-card-3"
+                            class="bg-red-50 dark:bg-red-900/40 p-4 rounded-lg shadow flex items-start gap-3 relative">
+                            <i class="fa-solid fa-tools text-red-600 text-lg mt-1"></i>
+                            <div>
+                                <div class="font-semibold text-red-900 dark:text-red-200">Security Tool Disabled</div>
+                                <div class="text-xs text-gray-700 dark:text-gray-300 mb-1">User: Liam Brown<br />Time:
+                                    09:45:51 AM</div>
+                                <div class="flex gap-2 mt-2">
+                                    <button
+                                        class="px-2 py-1 rounded-md bg-blue-600 text-white text-xs hover:bg-blue-700 transition-shadow shadow">Acknowledge</button>
+                                    <button
+                                        class="px-2 py-1 rounded-md bg-green-600 text-white text-xs hover:bg-green-700 transition-shadow shadow">Resolve</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- File Management Section -->
+            <section id="file-management-section"
+                class="w-full bg-white dark:bg-[#181A20] rounded-xl shadow-lg p-6 space-y-4 transition-shadow">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-folder-open text-blue-600 dark:text-blue-400"></i>
+                    <h2 class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">Work Server File
+                        Downloads</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="text-left border-b border-gray-100 dark:border-gray-800">
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">File Name</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Downloaded By</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Source</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Time</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-2 text-gray-900 dark:text-white">Budget2025.xlsx</td>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Ethan Lee</td>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Work Server</td>
+                                <td class="py-2 px-2 text-gray-500 dark:text-gray-400">09:59:12 AM</td>
+                                <td class="py-2 px-2">
+                                    <button
+                                        class="px-3 py-1 rounded-lg bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 transition-shadow shadow"><i
+                                            class="fa-solid fa-trash"></i> Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-2 text-gray-900 dark:text-white">Client_Proposal.pdf</td>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Jane Smith</td>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Personal Space</td>
+                                <td class="py-2 px-2 text-gray-500 dark:text-gray-400">09:54:15 AM</td>
+                                <td class="py-2 px-2">
+                                    <button
+                                        class="px-3 py-1 rounded-lg bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 transition-shadow shadow"><i
+                                            class="fa-solid fa-trash"></i> Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Access Controls Section -->
+                <div class="mt-8">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-shield text-blue-600 dark:text-blue-400"></i> Access Controls</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs">
+                            <thead>
+                                <tr class="text-left border-b border-gray-100 dark:border-gray-800">
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">File</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Staff</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Manager</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Admin</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Password Protection</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">HR-2024-Instructions.pdf</td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" disabled /></td>
+                                    <td class="py-2 px-2 flex gap-2 items-center">
+                                        <input type="password" placeholder="Set password" class="rounded bg-gray-100 dark:bg-[#23272F] px-2 py-1 text-xs focus:outline-none" />
+                                        <button class="px-2 py-1 rounded bg-blue-600 text-white text-xs shadow">Set</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">fin_report-2024.xlsx</td>
+                                    <td class="py-2 px-2"><input type="checkbox" class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" disabled /></td>
+                                    <td class="py-2 px-2 flex gap-2 items-center">
+                                        <input type="password" placeholder="Set password" class="rounded bg-gray-100 dark:bg-[#23272F] px-2 py-1 text-xs focus:outline-none" />
+                                        <button class="px-2 py-1 rounded bg-blue-600 text-white text-xs shadow">Set</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">unknown.exe</td>
+                                    <td class="py-2 px-2"><input type="checkbox" class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" disabled /></td>
+                                    <td class="py-2 px-2 flex gap-2 items-center">
+                                        <input type="password" placeholder="Set password" class="rounded bg-gray-100 dark:bg-[#23272F] px-2 py-1 text-xs focus:outline-none" />
+                                        <button class="px-2 py-1 rounded bg-blue-600 text-white text-xs shadow">Set</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">Assign which roles can access each file and optionally set a password for additional protection. (Simulation only)</div>
+                </div>
+            </section>
+        </main>
+
+        <!-- USER MONITORING CONTENT -->
+        <main id="main-monitoring" class="hidden flex-1 ml-0 dark:bg-[#15171B] py-6 px-8 gap-6 bg-gray-50 transition-all overflow-y-auto">
+            <section id="user-list-section" class="flex-1 flex flex-col gap-6 min-w-0">
+                <!-- USER SEARCH/FILTER -->
+                <div id="user-list-header" class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Remote Users</h2>
+                        <span
+                            class="ml-2 px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-[#223357] text-sm font-medium text-blue-600 dark:text-blue-400">32</span>
+                    </div>
+                    <div class="flex gap-3 items-center">
+                        <input type="text"
+                            class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-[#232736] text-gray-700 dark:text-gray-100 shadow outline-none focus:ring-2 ring-blue-300 transition-all w-56"
+                            placeholder="Filter by name/email..." />
+                        <select
+                            class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-[#232736] text-gray-700 dark:text-gray-100 shadow outline-none focus:ring-2 ring-blue-300 transition-all">
+                            <option>Status: All</option>
+                            <option>Online</option>
+                            <option>Idle</option>
+                            <option>Offline</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- USER CARDS LIST -->
+                <div id="user-list" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+                    <!-- USER CARD 1 -->
+                    <div id="user-card-1"
+                        class="rounded-xl bg-white dark:bg-[#232736] shadow-lg p-4 flex items-center justify-between transition-all group">
+                        <div class="flex items-center gap-4">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg"
+                                class="w-14 h-14 rounded-full shadow border-2 border-green-400" alt="User" />
+                            <div>
+                                <div class="font-semibold text-gray-900 dark:text-gray-100">Jordan Lee</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">jordan.lee@email.com</div>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                    <span class="text-xs text-green-600 font-medium ml-1">Online</span>
+                                    <span class="mx-2 text-gray-400">•</span>
+                                    <span class="text-xs text-gray-400">Active: 1h 24m</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 items-end">
+                            <div class="flex gap-1">
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-red-50 dark:bg-[#35203f] text-red-600 dark:text-red-400 shadow hover:bg-red-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-power-off mr-1"></i> Force Logout</button>
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-yellow-50 dark:bg-[#3c3c26] text-yellow-600 dark:text-yellow-400 shadow hover:bg-yellow-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-user-lock mr-1"></i> Disable</button>
+                            </div>
+                            <div class="flex gap-1">
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-blue-50 dark:bg-[#224466] text-blue-600 dark:text-blue-400 shadow hover:bg-blue-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-eye"></i></button>
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-pink-50 dark:bg-[#5e2d3a] text-pink-600 dark:text-pink-400 shadow hover:bg-pink-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-shield-virus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- USER CARD 2 -->
+                    <div id="user-card-2"
+                        class="rounded-xl bg-white dark:bg-[#232736] shadow-lg p-4 flex items-center justify-between transition-all group">
+                        <div class="flex items-center gap-4">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg"
+                                class="w-14 h-14 rounded-full shadow border-2 border-yellow-400" alt="User" />
+                            <div>
+                                <div class="font-semibold text-gray-900 dark:text-gray-100">Monica Chan</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">monica.chan@email.com</div>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+                                    <span class="text-xs text-yellow-600 font-medium ml-1">Idle</span>
+                                    <span class="mx-2 text-gray-400">•</span>
+                                    <span class="text-xs text-gray-400">Idle: 8m</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 items-end">
+                            <div class="flex gap-1">
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-red-50 dark:bg-[#35203f] text-red-600 dark:text-red-400 shadow hover:bg-red-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-power-off mr-1"></i> Force Logout</button>
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-yellow-50 dark:bg-[#3c3c26] text-yellow-600 dark:text-yellow-400 shadow hover:bg-yellow-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-user-lock mr-1"></i> Disable</button>
+                            </div>
+                            <div class="flex gap-1">
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-blue-50 dark:bg-[#224466] text-blue-600 dark:text-blue-400 shadow hover:bg-blue-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-eye"></i></button>
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-pink-50 dark:bg-[#5e2d3a] text-pink-600 dark:text-pink-400 shadow hover:bg-pink-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-shield-virus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- USER CARD 3 -->
+                    <div id="user-card-3"
+                        class="rounded-xl bg-white dark:bg-[#232736] shadow-lg p-4 flex items-center justify-between transition-all group opacity-70">
+                        <div class="flex items-center gap-4">
+                            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg"
+                                class="w-14 h-14 rounded-full shadow border-2 border-gray-400" alt="User" />
+                            <div>
+                                <div class="font-semibold text-gray-900 dark:text-gray-100">Eli Kline</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">eli.kline@email.com</div>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                                    <span class="text-xs text-gray-400 font-medium ml-1">Offline</span>
+                                    <span class="mx-2 text-gray-400">•</span>
+                                    <span class="text-xs text-gray-400">Logged out</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 items-end">
+                            <div class="flex gap-1">
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-gray-100 dark:bg-[#2c2c3a] text-gray-600 dark:text-gray-400 shadow cursor-not-allowed text-xs font-semibold opacity-70"
+                                    disabled=""><i class="fa-solid fa-power-off mr-1"></i> Force Logout</button>
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-yellow-50 dark:bg-[#3c3c26] text-yellow-600 dark:text-yellow-400 shadow hover:bg-yellow-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-user-lock mr-1"></i> Disable</button>
+                            </div>
+                            <div class="flex gap-1">
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-blue-50 dark:bg-[#224466] text-blue-600 dark:text-blue-400 shadow hover:bg-blue-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-eye"></i></button>
+                                <button
+                                    class="rounded-lg px-2.5 py-1 bg-pink-50 dark:bg-[#5e2d3a] text-pink-600 dark:text-pink-400 shadow hover:bg-pink-100 hover:scale-105 transition-all text-xs font-semibold"><i
+                                        class="fa-solid fa-shield-virus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- SESSION &amp; FILE MONITOR OVERVIEW -->
+                <div id="session-file-monitor" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="session-monitor-card"
+                        class="bg-white dark:bg-[#232736] rounded-xl shadow-lg p-4 flex items-center gap-4">
+                        <i class="fa-solid fa-clock text-2xl text-blue-400 dark:text-blue-300"></i>
+                        <div>
+                            <div class="text-lg font-semibold text-gray-900 dark:text-gray-100">Active Sessions
+                            </div>
+                            <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">17</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Last Multi-Session Event: 2 mins
+                                ago</div>
+                        </div>
+                        <button
+                            class="ml-auto px-3 py-1 rounded-lg bg-blue-100 text-blue-600 dark:bg-[#223357] dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-[#123355] shadow transition-all font-medium text-xs"><i
+                                class="fa-solid fa-user-lock mr-1"></i> Block Multiple Logins</button>
+                    </div>
+                    <div id="file-monitor-card"
+                        class="bg-white dark:bg-[#232736] rounded-xl shadow-lg p-4 flex items-center gap-4">
+                        <i class="fa-solid fa-folder-open text-2xl text-green-400 dark:text-green-300"></i>
+                        <div>
+                            <div class="text-lg font-semibold text-gray-900 dark:text-gray-100">File Activities
+                            </div>
+                            <div class="text-3xl font-bold text-green-600 dark:text-green-400">12</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Suspicious Files: <span
+                                    class="font-bold text-yellow-500">2</span></div>
+                        </div>
+                        <button
+                            class="ml-auto px-3 py-1 rounded-lg bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 shadow transition-all font-medium text-xs"><i
+                                class="fa-solid fa-trash mr-1"></i> Delete Suspicious</button>
+                    </div>
+                </div>
+                <!-- USER ACTIVITY LOG -->
+                <section id="user-activity-log" class="mt-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Activity Timeline</h3>
+                        <div class="flex gap-2">
+                            <select
+                                class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-[#232736] text-gray-700 dark:text-gray-100 shadow outline-none focus:ring-2 ring-blue-300 transition-all">
+                                <option>Type: All</option>
+                                <option>Normal</option>
+                                <option>Suspicious</option>
+                                <option>Critical</option>
+                            </select>
+                            <input type="date"
+                                class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-[#232736] text-gray-700 dark:text-gray-100 shadow outline-none focus:ring-2 ring-blue-300 transition-all" />
+                            <input type="date"
+                                class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-[#232736] text-gray-700 dark:text-gray-100 shadow outline-none focus:ring-2 ring-blue-300 transition-all" />
+                            <button
+                                class="px-3 py-2 rounded-lg bg-blue-600 text-white shadow hover:bg-blue-700 transition-all font-semibold text-xs"><i
+                                    class="fa-solid fa-file-arrow-down mr-2"></i>Export CSV</button>
+                            <button
+                                class="px-3 py-2 rounded-lg bg-gray-200 dark:bg-[#232736] text-gray-600 dark:text-gray-300 shadow hover:bg-gray-300 dark:hover:bg-[#223357] transition-all font-semibold text-xs"><i
+                                    class="fa-solid fa-file-pdf mr-2"></i>Export PDF</button>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-[#232736] rounded-xl shadow-lg p-0 overflow-hidden">
+                        <ul id="activity-timeline" class="divide-y divide-gray-200 dark:divide-[#232736]">
+                            <li class="flex items-start gap-4 px-6 py-4 hover:bg-blue-50 dark:hover:bg-[#223357] transition-all"
+                                id="activity-1">
+                                <span class="flex-shrink-0 w-3 h-3 mt-2 rounded-full bg-green-500"></span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">Jordan Lee</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-400">10:14 AM</span>
+                                        <span
+                                            class="ml-3 px-2 py-0.5 rounded text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Normal</span>
+                                    </div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-200">Visited <span
+                                            class="font-medium underline">intranet.company.com</span> (IP:
+                                        192.168.0.12)</div>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4 px-6 py-4 hover:bg-yellow-50 dark:hover:bg-[#453a23] transition-all"
+                                id="activity-2">
+                                <span class="flex-shrink-0 w-3 h-3 mt-2 rounded-full bg-yellow-500"></span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">Monica
+                                            Chan</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-400">10:11 AM</span>
+                                        <span
+                                            class="ml-3 px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Suspicious</span>
+                                    </div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-200">Attempted unauthorized
+                                        access to <span class="font-medium">fin_report-2024.xlsx</span></div>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4 px-6 py-4 hover:bg-red-50 dark:hover:bg-[#3b233a] transition-all"
+                                id="activity-3">
+                                <span class="flex-shrink-0 w-3 h-3 mt-2 rounded-full bg-red-500"></span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">Eli Kline</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-400">09:57 AM</span>
+                                        <span
+                                            class="ml-3 px-2 py-0.5 rounded text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Critical</span>
+                                    </div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-200">Disabled endpoint security
+                                        tool on device <span class="font-medium">WS32-KLINE</span></div>
+                                </div>
+                                <div class="flex flex-col gap-1 ml-6">
+                                    <button
+                                        class="px-2 py-1 bg-pink-100 dark:bg-[#5e2d3a] text-pink-700 dark:text-pink-300 rounded shadow hover:bg-pink-200 dark:hover:bg-[#78364a] transition-all text-xs font-semibold"><i
+                                            class="fa-solid fa-shield-virus mr-1"></i> Quarantine</button>
+                                    <button
+                                        class="px-2 py-1 bg-blue-100 dark:bg-[#223357] text-blue-700 dark:text-blue-400 rounded shadow hover:bg-blue-200 dark:hover:bg-[#3150a0] transition-all text-xs font-semibold"><i
+                                            class="fa-solid fa-circle-check mr-1"></i> Resolve</button>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4 px-6 py-4 hover:bg-green-50 dark:hover:bg-[#1d2f22] transition-all"
+                                id="activity-4">
+                                <span class="flex-shrink-0 w-3 h-3 mt-2 rounded-full bg-green-500"></span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">Jordan Lee</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-400">09:49 AM</span>
+                                        <span
+                                            class="ml-3 px-2 py-0.5 rounded text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Normal</span>
+                                    </div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-200">Downloaded <span
+                                            class="font-medium">HR-2024-Instructions.pdf</span> from internal portal
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4 px-6 py-4 hover:bg-yellow-50 dark:hover:bg-[#453a23] transition-all"
+                                id="activity-5">
+                                <span class="flex-shrink-0 w-3 h-3 mt-2 rounded-full bg-yellow-500"></span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">Monica
+                                            Chan</span>
+                                        <span class="text-xs text-gray-400 dark:text-gray-400">09:43 AM</span>
+                                        <span
+                                            class="ml-3 px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Suspicious</span>
+                                    </div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-200">Sent internal email with
+                                        attachment <span
+                                            class="font-medium text-yellow-700 dark:text-yellow-400">unknown.exe</span>
+                                        to <span class="font-medium">finance@company.com</span></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <!-- FILE MANAGEMENT CONTENT -->
+        <main id="main-file-management" class="hidden flex-1 ml-0 dark:bg-[#15171B] py-6 px-8 gap-6 bg-gray-50 transition-all overflow-y-auto">
+            <section class="bg-white dark:bg-[#181A20] rounded-xl shadow-lg p-8 flex flex-col space-y-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-folder-open text-green-600 dark:text-green-400 text-2xl"></i>
+                    <h2 class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">File Management</h2>
+                </div>
+                <!-- Summary Stats Bar -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-green-50 dark:bg-green-900/30 rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-2xl font-bold text-green-700 dark:text-green-300">128</span>
+                        <span class="text-xs text-gray-700 dark:text-gray-300">Files Accessed Today</span>
+                    </div>
+                    <div class="bg-yellow-50 dark:bg-yellow-900/30 rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-2xl font-bold text-yellow-700 dark:text-yellow-300">3</span>
+                        <span class="text-xs text-gray-700 dark:text-gray-300">Suspicious Actions</span>
+                    </div>
+                    <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-2xl font-bold text-blue-700 dark:text-blue-300">Jordan Lee</span>
+                        <span class="text-xs text-gray-700 dark:text-gray-300">Most Active User</span>
+                    </div>
+                </div>
+                <!-- Search and Export Controls -->
+                <div class="flex flex-wrap gap-2 mb-3 items-center">
+                    <input type="text" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-bg" placeholder="Search by user, file, or action..." />
+                    <select class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-1 text-xs focus:outline-none">
+                        <option>All Actions</option>
+                        <option>View</option>
+                        <option>Download</option>
+                        <option>Delete</option>
+                        <option>Modify</option>
+                    </select>
+                    <button class="ml-auto px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-xs shadow"><i class="fa-solid fa-file-arrow-down"></i> Export CSV</button>
+                    <button class="px-3 py-1 rounded-lg bg-gray-200 dark:bg-[#232736] text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-[#223357] text-xs shadow"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                </div>
+                <!-- File Access Table -->
+                <div class="overflow-x-auto max-h-[320px] scrollbar-hide">
+                    <table class="min-w-full text-xs">
+                        <thead>
+                            <tr class="text-left border-b border-gray-100 dark:border-gray-800">
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">User</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">File</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Action</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Time</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Status</th>
+                                <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Jordan Lee</td>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">HR-2024-Instructions.pdf</td>
+                                <td class="py-2 px-2"><span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 font-semibold"><i class="fa-solid fa-eye"></i> View</span></td>
+                                <td class="py-2 px-2 text-gray-500 dark:text-gray-400">10:14 AM</td>
+                                <td class="py-2 px-2"><span class="inline-block px-2 py-1 rounded bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-300">Normal</span></td>
+                                <td class="py-2 px-2">
+                                    <button class="px-2 py-1 rounded bg-gray-100 dark:bg-[#232736] text-gray-600 dark:text-gray-300 text-xs shadow">Investigate</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Monica Chan</td>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">fin_report-2024.xlsx</td>
+                                <td class="py-2 px-2"><span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100 font-semibold"><i class="fa-solid fa-download"></i> Download</span></td>
+                                <td class="py-2 px-2 text-gray-500 dark:text-gray-400">10:11 AM</td>
+                                <td class="py-2 px-2"><span class="inline-block px-2 py-1 rounded bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200">Suspicious</span></td>
+                                <td class="py-2 px-2">
+                                    <button class="px-2 py-1 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 text-xs shadow">Quarantine</button>
+                                    <button class="px-2 py-1 rounded bg-gray-100 dark:bg-[#232736] text-gray-600 dark:text-gray-300 text-xs shadow">Investigate</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">Eli Kline</td>
+                                <td class="py-2 px-2 text-gray-700 dark:text-gray-200">unknown.exe</td>
+                                <td class="py-2 px-2"><span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 font-semibold"><i class="fa-solid fa-trash"></i> Delete</span></td>
+                                <td class="py-2 px-2 text-gray-500 dark:text-gray-400">09:57 AM</td>
+                                <td class="py-2 px-2"><span class="inline-block px-2 py-1 rounded bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300">Critical</span></td>
+                                <td class="py-2 px-2">
+                                    <button class="px-2 py-1 rounded bg-pink-100 dark:bg-[#5e2d3a] text-pink-700 dark:text-pink-300 text-xs shadow">Quarantine</button>
+                                    <button class="px-2 py-1 rounded bg-gray-100 dark:bg-[#232736] text-gray-600 dark:text-gray-300 text-xs shadow">Restore</button>
+                                    <button class="px-2 py-1 rounded bg-gray-100 dark:bg-[#232736] text-gray-600 dark:text-gray-300 text-xs shadow">Investigate</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Access Controls Section -->
+                <div class="mt-8">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2"><i class="fa-solid fa-user-shield text-blue-600 dark:text-blue-400"></i> Access Controls</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-xs">
+                            <thead>
+                                <tr class="text-left border-b border-gray-100 dark:border-gray-800">
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">File</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Staff</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Manager</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Admin</th>
+                                    <th class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Password Protection</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">HR-2024-Instructions.pdf</td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" disabled /></td>
+                                    <td class="py-2 px-2 flex gap-2 items-center">
+                                        <input type="password" placeholder="Set password" class="rounded bg-gray-100 dark:bg-[#23272F] px-2 py-1 text-xs focus:outline-none" />
+                                        <button class="px-2 py-1 rounded bg-blue-600 text-white text-xs shadow">Set</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">fin_report-2024.xlsx</td>
+                                    <td class="py-2 px-2"><input type="checkbox" class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" disabled /></td>
+                                    <td class="py-2 px-2 flex gap-2 items-center">
+                                        <input type="password" placeholder="Set password" class="rounded bg-gray-100 dark:bg-[#23272F] px-2 py-1 text-xs focus:outline-none" />
+                                        <button class="px-2 py-1 rounded bg-blue-600 text-white text-xs shadow">Set</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-2 text-gray-700 dark:text-gray-200">unknown.exe</td>
+                                    <td class="py-2 px-2"><input type="checkbox" class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" class="accent-blue-600" /></td>
+                                    <td class="py-2 px-2"><input type="checkbox" checked class="accent-blue-600" disabled /></td>
+                                    <td class="py-2 px-2 flex gap-2 items-center">
+                                        <input type="password" placeholder="Set password" class="rounded bg-gray-100 dark:bg-[#23272F] px-2 py-1 text-xs focus:outline-none" />
+                                        <button class="px-2 py-1 rounded bg-blue-600 text-white text-xs shadow">Set</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">Assign which roles can access each file and optionally set a password for additional protection. (Simulation only)</div>
+                </div>
+            </section>
+        </main>
+        <!-- SYSTEM POLICY CONTENT -->
+        <main id="main-system-policy" class="hidden flex-1 ml-0 dark:bg-[#15171B] py-6 px-8 gap-6 bg-gray-50 transition-all overflow-y-auto">
+            <section class="bg-white dark:bg-[#181A20] rounded-xl shadow-lg p-8 flex flex-col space-y-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-shield-halved text-blue-600 dark:text-blue-400 text-2xl"></i>
+                    <h2 class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">System Policy</h2>
+                </div>
+                <div class="text-gray-700 dark:text-gray-300">View and edit system security policies. (Placeholder content)</div>
+            </section>
+        </main>
+        <!-- SECURITY ALERTS CONTENT -->
+        <main id="main-security-alerts" class="hidden flex-1 ml-0 dark:bg-[#15171B] py-6 px-8 gap-6 bg-gray-50 transition-all overflow-y-auto">
+            <section class="bg-white dark:bg-[#181A20] rounded-xl shadow-lg p-8 flex flex-col space-y-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-red-600 dark:text-red-400 text-2xl"></i>
+                    <h2 class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">Security Alerts</h2>
+                </div>
+                <div class="text-gray-700 dark:text-gray-300">Review and respond to security alerts. (Placeholder content)</div>
+            </section>
+        </main>
+        <!-- SETTINGS CONTENT -->
+        <main id="main-settings" class="hidden flex-1 ml-0 dark:bg-[#15171B] py-6 px-8 gap-6 bg-gray-50 transition-all overflow-y-auto">
+            <section class="bg-white dark:bg-[#181A20] rounded-xl shadow-lg p-8 flex flex-col space-y-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-gear text-gray-400 text-2xl"></i>
+                    <h2 class="font-semibold text-lg text-gray-900 dark:text-white tracking-tight">Settings</h2>
+                </div>
+                <div class="text-gray-700 dark:text-gray-300">Configure admin portal settings. (Placeholder content)</div>
+            </section>
+        </main>
+    </div>
+
+    
+</body>
+</html>
