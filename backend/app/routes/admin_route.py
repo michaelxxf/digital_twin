@@ -1,12 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from .. import models, database, auth, admin, activity
 from ..schemas import UserOut, ActivityLog
 from typing import List, Optional
 from datetime import datetime, timedelta, UTC
 from app.database import get_db
+import re
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+class StaffCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    department: str
+
+def extract_domain(email: str) -> str:
+    """Extract domain from email address."""
+    return email.split('@')[-1].lower()
 
 def get_current_admin(current_user: models.User = Depends(auth.get_current_user)):
     if current_user.role != "admin":
@@ -28,8 +40,11 @@ def get_all_users(
     db: Session = Depends(get_db),
     current_admin: models.User = Depends(get_current_admin)
 ):
-    """Get all users with pagination"""
-    return admin.get_all_users(db, skip=skip, limit=limit)
+    """Get all users in the admin's organisation (by email domain) with pagination"""
+    admin_domain = extract_domain(current_admin.email)
+    all_users = admin.get_all_users(db, skip=skip, limit=limit)
+    filtered_users = [user for user in all_users if extract_domain(user.email) == admin_domain]
+    return filtered_users
 
 @router.get("/users/{user_id}", response_model=UserOut)
 def get_user_by_id(
@@ -37,10 +52,13 @@ def get_user_by_id(
     db: Session = Depends(get_db),
     current_admin: models.User = Depends(get_current_admin)
 ):
-    """Get specific user by ID"""
+    """Get specific user by ID (only if in admin's organisation)"""
     user = admin.get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    admin_domain = extract_domain(current_admin.email)
+    if extract_domain(user.email) != admin_domain:
+        raise HTTPException(status_code=403, detail="Access denied")
     return user
 
 @router.put("/users/{user_id}/status")
@@ -50,7 +68,13 @@ def update_user_status(
     db: Session = Depends(get_db),
     current_admin: models.User = Depends(get_current_admin)
 ):
-    """Activate or deactivate a user"""
+    """Activate or deactivate a user in admin organisation"""
+    user = admin.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    admin_domain = extract_domain(current_admin.email)
+    if extract_domain(user.email) != admin_domain:
+        raise HTTPException(status_code=403, detail="Access denied")
     return admin.update_user_status(db, user_id, is_active)
 
 @router.delete("/users/{user_id}")
@@ -78,20 +102,27 @@ def get_user_activity_summary(
     db: Session = Depends(get_db),
     current_admin: models.User = Depends(get_current_admin)
 ):
-    """Get activity summary for a specific user"""
+    """Get activity summary for a specific user (only if in admin's organisation)"""
+    user = admin.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    admin_domain = extract_domain(current_admin.email)
+    if extract_domain(user.email) != admin_domain:
+        raise HTTPException(status_code=403, detail="Access denied")
     return admin.get_user_activity_summary(db, user_id, days)
 
 @router.post("/staff/create")
 def create_staff_user(
-    username: str,
-    email: str,
-    password: str,
-    department: str,
+    staff: StaffCreate,
     db: Session = Depends(get_db),
     current_admin: models.User = Depends(get_current_admin)
 ):
-    """Create a new staff user"""
-    return admin.create_staff_user(db, username, email, password, department)
+    """Create a new staff user (must match admin's email domain)"""
+    admin_domain = extract_domain(current_admin.email)
+    user_domain = extract_domain(staff.email)
+    if user_domain != admin_domain:
+        raise HTTPException(status_code=400, detail="Email domain must match admin's organisation domain")
+    return admin.create_staff_user(db, staff.username, staff.email, staff.password, staff.department)
 
 @router.get("/analytics/activities")
 def get_activity_analytics(

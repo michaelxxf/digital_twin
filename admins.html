@@ -11,6 +11,7 @@
         referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="admin.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         html {
             font-family: 'Inter', sans-serif;
@@ -1017,8 +1018,7 @@
                         <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                             <input type="checkbox" checked class="accent-blue-600"> Auto-lock After Failed Logins
                         </label>
-                        <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            Lock After (failed attempts):
+                        <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100"> Lock After (failed attempts):
                             <input type="number" min="1" max="10" value="3" class="w-20 ml-2 rounded bg-gray-100 dark:bg-[#23272F] text-gray-900 dark:text-gray-100 px-2 py-1 text-xs focus:outline-none">
                         </label>
                     </div>
@@ -1398,61 +1398,129 @@
                 </div>
                 
                 <!-- Create Staff Form -->
-                <div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="flex flex-col">
-                            <label for="staff-name" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-                            <input type="text" id="staff-name" placeholder="e.g., Jane Doe" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-2 text-sm focus:outline-none">
-                        </div>
-                        <div class="flex flex-col">
-                            <label for="staff-email" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
-                            <input type="email" id="staff-email" placeholder="e.g., jane.doe@example.com" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-2 text-sm focus:outline-none">
-                        </div>
-                        <div class="flex flex-col">
-                            <label for="staff-password" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Temporary Password</label>
-                            <input type="password" id="staff-password" placeholder="••••••••" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-2 text-sm focus:outline-none">
-                        </div>
-                        <div class="flex flex-col">
-                            <label for="staff-role" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role/Department</label>
-                            <select id="staff-role" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-2 text-sm focus:outline-none">
-                                <option>Finance</option>
-                                <option>Human Resources</option>
-                                <option>IT Support</option>
-                                <option>Marketing</option>
-                            </select>
+                <form id="create-staff-form">
+                    <div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="flex flex-col">
+                                <label for="staff-name" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                                <input type="text" id="staff-name" placeholder="e.g., Jane Doe" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-2 text-sm focus:outline-none">
+                            </div>
+                            <div class="flex flex-col">
+                                <label for="staff-email" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                                <input type="email" id="staff-email" placeholder="e.g., jane.doe@example.com" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-2 text-sm focus:outline-none">
+                            </div>
+                            <div class="flex flex-col">
+                                <label for="staff-password" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Temporary Password</label>
+                                <input type="password" id="staff-password" placeholder="••••••••" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-2 text-sm focus:outline-none">
+                            </div>
+                            <div class="flex flex-col">
+                                <label for="staff-role" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role/Department</label>
+                                <select id="staff-role" class="rounded bg-gray-100 dark:bg-[#23272F] px-3 py-2 text-sm focus:outline-none">
+                                    <option>Finance</option>
+                                    <option>Human Resources</option>
+                                    <option>IT Support</option>
+                                    <option>Marketing</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
+                
 
-                <!-- Initial Permissions -->
-                <div>
-                    <h3 class="text-md font-semibold text-gray-900 dark:text-gray-100 mb-4">Initial Permissions</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <input type="checkbox" checked class="accent-blue-600"> Browser Access
-                        </label>
-                        <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <input type="checkbox" checked class="accent-blue-600"> Email Access
-                        </label>
-                        <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <input type="checkbox" checked class="accent-blue-600"> File Explorer
-                        </label>
-                        <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <input type="checkbox" class="accent-blue-600"> System Settings
-                        </label>
+                    <!-- Initial Permissions -->
+                    <div>
+                        <h3 class="text-md font-semibold text-gray-900 dark:text-gray-100 mb-4">Initial Permissions</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <input type="checkbox" checked class="accent-blue-600"> Browser Access
+                            </label>
+                            <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <input type="checkbox" checked class="accent-blue-600"> Email Access
+                            </label>
+                            <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <input type="checkbox" checked class="accent-blue-600"> File Explorer
+                            </label>
+                            <label class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                                <input type="checkbox" class="accent-blue-600"> System Settings
+                            </label>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Create Staff Button -->
-                <div class="flex justify-end">
-                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Create Account
-                    </button>
-                </div>
+                    <!-- Create Staff Button -->
+                    <div class="flex justify-end">
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Create Account
+                        </button>
+                    </div>
+                </form>
             </section>
         </main>
     </div>
 
-    
+    <script>
+// filepath: c:\Users\michael\Desktop\digital_twin\admins.html
+// Add this script at the end of the body or in your admin.js
+
+document.addEventListener('DOMContentLoaded', function () {
+    const staffForm = document.getElementById('create-staff-form');
+    if (staffForm) {
+        staffForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const name = document.getElementById('staff-name').value.trim();
+            const email = document.getElementById('staff-email').value.trim();
+            const password = document.getElementById('staff-password').value;
+            const department = document.getElementById('staff-role').value;
+
+            // Get admin token from localStorage/sessionStorage/cookie as per your auth flow
+            const token = localStorage.getItem('admin_token'); // Adjust as needed
+
+            try {
+                const response = await fetch('http://localhost:8000/admin/staff/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                        },
+                    body: JSON.stringify({
+                        username: name,
+                        email: email,
+                        password: password,
+                        department: department
+                    })
+                });
+                if (response.ok) {
+                    // Show staff details in SweetAlert2
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Staff Account Created!',
+                        html: `
+                            <div class="text-left">
+                                <b>Name:</b> ${name}<br>
+                                <b>Email:</b> ${email}<br>
+                                <b>Department:</b> ${department}<br>
+                                <b>Temporary Password:</b> <span style="font-family:monospace">${password}</span>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">Share these details securely with the staff member.</div>
+                        `
+                    });
+                    staffForm.reset();
+                } else {
+                    const err = await response.json();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to Create Staff',
+                        text: err.detail || 'Failed to create staff account.'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Please try again.'
+                });
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>

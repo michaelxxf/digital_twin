@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;500;600;700;800;900&display=swap">
     <style>
         body {
@@ -135,16 +136,144 @@
         });
 
         // Form submission handling
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Simulate login - redirect to admin dashboard
-            window.location.href = 'admins.html';
+
+            const email = loginForm.querySelector('input[type="email"]').value.trim();
+            const password = loginForm.querySelector('input[type="password"]').value;
+
+            if (!email || !password) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Fields',
+                    text: 'Please enter both email and password.'
+                });
+                return;
+            }
+
+            // Use URLSearchParams for form data
+            const formData = new URLSearchParams();
+            formData.append('username', email);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch('http://localhost:8000/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Store token securely (for demo, using localStorage)
+                    localStorage.setItem('admin_token', data.access_token);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login Successful!',
+                        text: 'Redirecting to dashboard...'
+                    }).then(() => {
+                        window.location.href = 'admins.html';
+                    });
+                } else {
+                    const err = await response.json();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login Failed',
+                        text: err.detail || 'Invalid credentials.'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Please try again.'
+                });
+            }
         });
 
-        signupForm.addEventListener('submit', (e) => {
+
+
+        signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Simulate signup - redirect to admin dashboard
-            window.location.href = 'admins.html';
+
+            // Get form values
+            const name = signupForm.querySelector('input[type="text"]').value.trim();
+            const email = signupForm.querySelector('input[type="email"]').value.trim();
+            const password = signupForm.querySelectorAll('input[type="password"]')[0].value;
+            const confirmPassword = signupForm.querySelectorAll('input[type="password"]')[1].value;
+            const termsChecked = signupForm.querySelector('input[type="checkbox"]').checked;
+
+            // Basic validation
+            if (!name || !email || !password || !confirmPassword) {
+                Swal.fire({
+                icon: 'warning',
+                title: 'Missing Fields',
+                text: 'All fields are required.'
+            });
+                return;
+            }
+            if (password !== confirmPassword) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Password Mismatch',
+                    text: 'Passwords do not match.'
+                });
+                return;
+            }
+            if (!termsChecked) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Terms Not Agreed',
+                    text: 'You must agree to the Terms of Service.'
+                });
+                return;
+            }
+            if (password.length < 8) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Weak Password',
+                    text: 'Password must be at least 8 characters.'
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8000/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: name,
+                        email: email,
+                        password: password,
+                        role: 'admin'
+                    })
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Registration successful!',
+                        text: 'You can now log in.'
+                    });
+                    signupForm.reset();
+                    // Optionally switch to login tab
+                    loginTab.click();
+                } else {
+                    const err = await response.json();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Registration failed.',
+                        text: err.detail || 'Registration failed.'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network error.',
+                    text: 'Please try again.'
+                });
+            }
         });
     </script>
 </body>

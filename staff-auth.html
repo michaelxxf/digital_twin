@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Authentication - Digital Twin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>window.FontAwesomeConfig = { autoReplaceSvg: 'nest' };</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,11 +88,84 @@
 
     <script>
         // Form submission handling
-        document.getElementById('login-form').addEventListener('submit', (e) => {
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Simulate login - redirect to staff dashboard
-            window.location.href = 'User.html';
-        });
+
+            const email = e.target.querySelector('input[type="email"]').value.trim();
+            const password = e.target.querySelector('input[type="password"]').value;
+
+            if (!email || !password) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Fields',
+                    text: 'Please enter both email and password.'
+                });
+                return;
+            }
+
+            // Use form data for FastAPI OAuth2
+            const formData = new URLSearchParams();
+            formData.append('username', email);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch('http://localhost:8000/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Decode email domain for company check (optional, backend should enforce)
+                    const domain = email.split('@')[1].toLowerCase();
+
+                    // Optionally: fetch staff profile to verify role and domain
+                    localStorage.setItem('staff_token', data.access_token);
+
+                    // Fetch staff profile to check role and domain
+                    const profileRes = await fetch('http://localhost:8000/staff/profile', {
+                        headers: {
+                            'Authorization': `Bearer ${data.access_token}`
+                        }
+                    });
+
+                    if (profileRes.ok) {
+                        const profile = await profileRes.json();
+                        // Optionally, check domain here if needed
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Login Successful!',
+                            text: 'Redirecting to your dashboard...'
+                        }).then(() => {
+                            window.location.href = 'User.html';
+                        });
+                    } else {
+                        // Not a staff or domain mismatch
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Access Denied',
+                            text: 'You do not have staff access or your email domain is not recognized.'
+                        });
+                    }
+                } else {
+                    const err = await response.json();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login Failed',
+                        text: err.detail || 'Invalid credentials.'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Please try again.'
+                });
+            }
+    });
     </script>
 </body>
 </html> 

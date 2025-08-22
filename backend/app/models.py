@@ -34,7 +34,7 @@ class Admin(Base):
     __tablename__ = "admins"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True)
-    privileges = Column(String(255))
+    privileges = Column(String(255), default="full_access")
     user = relationship("User")
 
 class ActivityLog(Base):
