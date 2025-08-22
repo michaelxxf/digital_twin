@@ -10,8 +10,7 @@ class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, List[WebSocket]] = {
             "admin": [],
-            "staff": [],
-            "users": []
+            "staff": []
         }
 
     async def connect(self, websocket: WebSocket, client_type: str):
